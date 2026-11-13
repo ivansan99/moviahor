@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipo MoviAhorro</title>
+<style>
+:root {
+  /* Paleta y UX del mockup de Gemini (teal, pizarra y ámbar); layout: teléfono navegable + guía de la demo como línea de transporte */
+  --teal: #0d9488;
+  --teal-dark: #0f766e;
+  --teal-soft: #e6fffa;
+  --teal-line: #b2f5ea;
+  --ink: #1e293b;
+  --ink-2: #334155;
+  --muted: #475569;
+  --muted-2: #64748b;
+  --line: #e2e8f0;
+  --line-2: #cbd5e1;
+  --bg: #f1f5f9;
+  --app-bg: #f8fafc;
+  --surface: #ffffff;
+  --green: #059669;
+  --orange: #ea580c;
+  --gray: #64748b;
+  --amber-1: #fef3c7;
+  --amber-2: #fde68a;
+  --amber-b: #f59e0b;
+  --amber-t: #92400e;
+  --amber-badge: #d97706;
+  --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--amber-b); outline-offset: 2px; }
+.ic { flex: none; display: block; }
+.vh { position: absolute; left: -9999px; }
+
+/* ---------- Página ---------- */
+.page-head { text-align: center; padding: 30px 20px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.page-head h1 { margin: 0; font-size: clamp(1.9rem, 4vw, 2.5rem); color: var(--teal-dark); }
+.page-head .kicker { margin: 0; font-size: 1.05rem; color: var(--muted); }
+.page-head .lede { margin: 4px 0 0; max-width: 62ch; color: var(--muted-2); font-size: .98rem; line-height: 1.5; }
+.stage { max-width: 1120px; margin: 0 auto; padding: 22px 20px 56px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 52px; align-items: start; }
+.phone-col { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.screen-title { font-size: 1.05rem; font-weight: 700; color: var(--teal); background: var(--teal-soft); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--teal-line); }
+.fine { margin: 0; max-width: 372px; font-size: .82rem; color: var(--muted-2); line-height: 1.4; text-align: center; }
+
+/* ---------- Guía ---------- */
+.guide { display: flex; flex-direction: column; gap: 20px; max-width: 560px; padding-top: 40px; }
+.guide h2 { margin: 0; font-size: 1.4rem; color: var(--teal-dark); }
+.guide h3 { margin: 0; font-size: 1.08rem; color: var(--teal-dark); }
+.guide .sub { margin-top: -12px; }
+.line { list-style: none; margin: 0; padding: 0; position: relative; display: flex; flex-direction: column; gap: 2px; }
+.line::before { content: ""; position: absolute; left: 13px; top: 18px; bottom: 18px; width: 6px; border-radius: 3px; background: var(--teal); }
+.line li { position: relative; padding-left: 46px; }
+.line li::before { content: ""; position: absolute; left: 4px; top: 12px; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 5px solid var(--teal); box-sizing: border-box; }
+.stop { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 9px 10px; border-radius: 12px; }
+.stop:hover { background: var(--surface); }
+.stop b { display: block; font-size: 1rem; color: var(--teal-dark); }
+.stop span { display: block; font-size: .92rem; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+.tests { display: flex; flex-wrap: wrap; gap: 8px; }
+.test { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; background: var(--surface); border: 1.5px solid var(--line-2); border-radius: 12px; padding: 9px 12px; max-width: 100%; }
+.test:hover { border-color: var(--teal); }
+.test small { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--teal); }
+.test span { font-size: .92rem; }
+.qr-card[hidden] { display: none; }
+.qr-card { display: flex; gap: 18px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.qr-card #qrBox { flex: none; width: 150px; height: 150px; }
+.qr-card svg { width: 150px; height: 150px; display: block; }
+.qr-card p { margin: 0; line-height: 1.45; color: var(--muted); font-size: .93rem; }
+.qr-card b { display: block; color: var(--teal-dark); font-size: 1.05rem; margin-bottom: 4px; }
+
+/* ---------- Teléfono (como el mockup de Gemini) ---------- */
+.phone { position: relative; width: 372px; max-width: 100%; height: 760px; background: var(--surface); border: 12px solid var(--ink); border-radius: 40px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 25px rgba(0, 0, 0, .15); }
+.notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 20px; background: var(--ink); border-radius: 0 0 10px 10px; z-index: 40; }
+.app-header { flex: none; padding: 28px 15px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); background: var(--surface); }
+.app-logo { background: none; border: 0; padding: 0; font-weight: 700; font-size: 1.15rem; color: var(--teal); }
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--line); display: grid; place-items: center; font-size: 1rem; }
+.viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--app-bg); }
+.scr { position: absolute; inset: 0; overflow-y: auto; padding: 12px 12px 84px; display: none; flex-direction: column; gap: 10px; }
+.scr.on { display: flex; }
+.scr > * { flex-shrink: 0; }
+.scr h3.t { margin: 2px 0 0; font-size: 1.02rem; color: var(--teal-dark); }
+.sub { margin: 0; color: var(--muted-2); font-size: .86rem; line-height: 1.4; }
+.bottom-nav { flex: none; display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line); background: var(--surface); padding: 6px 2px 8px; z-index: 15; }
+.nav-link { background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; color: var(--muted-2); font-size: .64rem; border-radius: 8px; }
+.nav-link .em { font-size: 1.15rem; line-height: 1.2; }
+.trivia-teaser { display: flex; align-items: center; gap: 10px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--teal); border-radius: 8px; padding: 10px 11px; font-size: .86rem; color: var(--ink-2); }
+.trivia-teaser .em { font-size: 1.5rem; }
+.trivia-teaser span span { display: block; color: var(--muted-2); margin-top: 2px; }
+.trivia-teaser .go { margin-left: auto; color: var(--teal); font-weight: 700; }
+.nav-link[aria-current="page"] { color: var(--teal); font-weight: 700; }
+
+/* ---------- Piezas comunes ---------- */
+.btn-primary { background: var(--teal); color: #fff; border: 0; width: 100%; padding: 11px; border-radius: 8px; font-weight: 700; font-size: .98rem; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn { border: 1.5px solid var(--teal); background: var(--surface); color: var(--teal-dark); border-radius: 999px; padding: 7px 13px; font-weight: 700; font-size: .88rem; }
+.btn.primary { background: var(--teal); color: #fff; }
+.btn.danger { border-color: #b91c1c; color: #b91c1c; }
+.btn.small { padding: 5px 10px; font-size: .82rem; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--teal-dark); font-weight: 700; font-size: .84rem; text-decoration: underline; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.card { background: var(--surface); border-radius: 10px; border: 1px solid var(--line); overflow: hidden; box-shadow: 0 1px 2px rgba(0, 0, 0, .04); }
+.card-pad { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.card h4 { margin: 0; font-size: .98rem; }
+.card p { margin: 0; line-height: 1.42; font-size: .9rem; }
+.promo-banner { background: linear-gradient(135deg, var(--amber-1), var(--amber-2)); border: 1px solid var(--amber-b); padding: 8px 11px; border-radius: 8px; display: flex; align-items: flex-start; gap: 9px; font-size: .84rem; color: var(--amber-t); line-height: 1.4; }
+.badge { flex: none; background: var(--amber-badge); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: .62rem; font-weight: 700; letter-spacing: .03em; margin-top: 2px; }
+.promo-banner i { display: block; font-size: .76rem; margin-top: 2px; }
+.disclaimer-box { background: var(--bg); border-left: 3px solid var(--teal); padding: 9px 10px; font-size: .8rem; color: var(--muted); border-radius: 4px; line-height: 1.4; }
+.disclaimer-box b { color: var(--ink-2); }
+.trip-item { background: var(--surface); padding: 10px; border-radius: 8px; border: 1px solid var(--line); font-size: .88rem; display: flex; flex-direction: column; gap: 3px; }
+.trip-item p { margin: 0; }
+.save { color: var(--green); font-weight: 700; }
+.benefit-card { background: var(--surface); padding: 10px; border-radius: 8px; border: 1px solid var(--line); border-left: 3px solid var(--amber-b); font-size: .88rem; display: flex; flex-direction: column; gap: 3px; }
+.benefit-card p { margin: 0; line-height: 1.4; }
+.benefit-card .hl { color: var(--amber-badge); font-size: .82rem; }
+.benefit-card.ok { border-left-color: var(--teal); }
+.benefit-card.none { border-left-color: var(--line-2); color: var(--muted); }
+.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-style: italic; font-weight: 700; }
+.map-mock { background: var(--line-2); border-radius: 8px; overflow: hidden; }
+.map-mock svg { display: block; width: 100%; height: auto; }
+.map-cap { font-size: .72rem; font-weight: 700; color: var(--ink-2); padding: 4px 8px; background: #dbe3ea; }
+.empty { font-size: .86rem; color: var(--muted-2); background: var(--surface); border: 1.5px dashed var(--line-2); border-radius: 8px; padding: 10px 12px; }
+
+/* ---------- ¿Vamos? ---------- */
+.welcome-box { text-align: center; padding: 10px 4px 4px; }
+.welcome-box h2 { margin: 0 0 6px; font-size: 1.5rem; color: var(--teal-dark); }
+.welcome-box > p { margin: 0 0 14px; color: var(--muted); font-size: .95rem; }
+.search-trip-box { background: var(--surface); padding: 13px; border-radius: 10px; border: 1px solid var(--line-2); text-align: left; display: flex; flex-direction: column; }
+.search-trip-box label { font-size: .85rem; font-weight: 700; color: var(--ink-2); margin-bottom: 4px; }
+.search-trip-box input { width: 100%; padding: 9px 11px; border: 1px solid var(--line-2); border-radius: 6px; margin-bottom: 10px; font-size: .95rem; }
+.movi-card { background: var(--teal-soft); border: 1px solid var(--teal-line); border-radius: 10px; padding: 11px; display: flex; flex-direction: column; gap: 9px; }
+.movi-say { display: flex; gap: 9px; align-items: flex-start; font-size: .92rem; line-height: 1.42; }
+.bot-av { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--teal-dark); color: #fff; font-size: .68rem; font-weight: 700; line-height: 30px; text-align: center; }
+.opts-q { display: flex; flex-direction: column; gap: 6px; }
+.ans { text-align: left; border: 1.5px solid var(--line-2); background: var(--surface); border-radius: 8px; padding: 8px 10px; font-size: .88rem; }
+.ans.right { border-color: var(--green); background: #ecfdf5; }
+.ans.wrong { border-color: #b91c1c; background: #fef2f2; }
+.qtag { align-self: flex-start; font-size: .72rem; font-weight: 700; color: var(--teal-dark); background: var(--teal-soft); border: 1px solid var(--teal-line); border-radius: 20px; padding: 2px 9px; }
+.fb { font-size: .86rem; color: var(--teal-dark); background: var(--teal-soft); border-radius: 6px; padding: 7px 9px; line-height: 1.4; }
+
+/* ---------- Navegación ---------- */
+.route-summary { background: var(--teal-soft); border: 1px solid var(--teal-line); padding: 8px 11px; border-radius: 6px; font-size: .9rem; color: #234e52; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter { border: 1.5px solid var(--line-2); background: var(--surface); border-radius: 20px; padding: 5px 11px; font-size: .8rem; font-weight: 700; color: var(--muted); }
+.filter[aria-pressed="true"] { border-color: var(--teal); background: var(--teal); color: #fff; }
+.nudge { background: var(--teal-soft); border: 1px solid var(--teal-line); border-radius: 10px; padding: 11px; display: flex; flex-direction: column; gap: 8px; font-size: .9rem; line-height: 1.42; }
+.nudge p { margin: 0; }
+.note { margin: 0; font-size: .84rem; color: var(--teal-dark); background: var(--teal-soft); border-radius: 6px; padding: 7px 10px; line-height: 1.4; }
+.card-header { padding: 7px 11px; color: #fff; font-weight: 700; font-size: .92rem; display: flex; justify-content: space-between; align-items: center; }
+.card-header .price { font-size: 1.1rem; font-variant-numeric: tabular-nums; }
+.bg-green { background: var(--green); }
+.bg-orange { background: var(--orange); }
+.bg-gray { background: var(--gray); }
+.card-content { padding: 10px 11px 11px; font-size: .88rem; color: var(--ink-2); display: flex; flex-direction: column; gap: 6px; }
+.card-content p { margin: 0; line-height: 1.4; }
+.legs { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.b { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: .9rem; line-height: 1; padding: 4px 7px; border-radius: 6px; border: 2px solid var(--ink-2); color: var(--ink-2); background: var(--surface); }
+.b.train { border-color: var(--teal-dark); color: var(--teal-dark); }
+.b.subte { width: 26px; height: 26px; padding: 0; justify-content: center; border-radius: 50%; background: var(--c); border-color: var(--c); color: #fff; }
+.arr { color: var(--muted-2); font-weight: 700; }
+.acc { font-size: .8rem; border-radius: 6px; padding: 6px 8px; line-height: 1.35; }
+.acc.warn { background: var(--amber-1); color: var(--amber-t); }
+.acc.ok { background: #ecfdf5; color: #065f46; }
+details.why { border-top: 1px dashed var(--line-2); padding-top: 7px; }
+details.why summary { font-weight: 700; color: var(--teal-dark); }
+.why table { width: 100%; border-collapse: collapse; margin: 7px 0 5px; font-variant-numeric: tabular-nums; font-size: .84rem; }
+.why td { padding: 3px 0; }
+.why td:last-child { text-align: right; white-space: nowrap; }
+.why tr:last-child td { border-top: 1.5px solid var(--ink); font-weight: 700; padding-top: 5px; }
+.why .src { font-size: .76rem; color: var(--muted-2); margin-top: 4px; }
+.maps { font-weight: 700; color: var(--teal-dark); font-size: .88rem; }
+
+/* ---------- Medios, datos ---------- */
+.payment-card { background: var(--surface); border: 1px solid var(--line-2); padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .88rem; }
+.payment-card .l { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.payment-card .l span { font-size: .78rem; color: var(--muted-2); }
+.payment-card .r { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; }
+.status { color: #10b981; font-weight: 700; font-size: .8rem; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: .84rem; font-weight: 700; color: var(--ink-2); }
+.field select { padding: 8px; border-radius: 6px; border: 1px solid var(--line-2); background: var(--surface); font-weight: 400; font-size: .9rem; }
+.add-form { background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 11px; display: flex; flex-direction: column; gap: 9px; }
+.sw-row { display: flex; align-items: flex-start; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.sw-row:last-child { border-bottom: 0; }
+.sw-row .txt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sw-row .txt b { font-size: .9rem; }
+.sw-row .txt span { font-size: .78rem; color: var(--muted-2); line-height: 1.35; }
+.sw { flex: none; width: 46px; height: 28px; border-radius: 999px; border: 0; background: var(--line-2); position: relative; transition: background .2s; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: left .2s; }
+.sw[aria-checked="true"] { background: var(--teal); }
+.sw[aria-checked="true"]::after { left: 21px; }
+dl.facts { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 10px; font-size: .84rem; }
+dl.facts dt { color: var(--muted-2); }
+dl.facts dd { margin: 0; font-weight: 700; }
+ul.plain { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 4px; font-size: .84rem; line-height: 1.38; }
+.bar { height: 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--teal); border-radius: 999px; }
+.big { font-size: 1.5rem; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+
+/* ---------- Podcast ---------- */
+.ep { display: flex; align-items: center; gap: 9px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.ep:last-child { border-bottom: 0; }
+.ep .txt { flex: 1; display: flex; flex-direction: column; gap: 1px; font-size: .86rem; }
+.ep .txt span { font-size: .76rem; color: var(--muted-2); }
+.play { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--teal); color: #fff; display: grid; place-items: center; }
+.player { background: var(--teal-dark); color: #fff; border-radius: 8px; padding: 9px 11px; display: flex; flex-direction: column; gap: 6px; font-size: .84rem; }
+.player .bar { background: rgba(255, 255, 255, .25); border: 0; height: 6px; }
+.player .bar i { background: var(--teal-line); width: 0; animation: grow 45s linear forwards; }
+@keyframes grow { to { width: 100%; } }
+
+/* ---------- Chat ---------- */
+.chat { position: absolute; left: 0; right: 0; bottom: 0; top: 9%; display: none; flex-direction: column; background: var(--surface); border-radius: 22px 22px 0 0; box-shadow: 0 -12px 30px rgba(15, 23, 42, .25); z-index: 22; }
+.chat.on { display: flex; }
+.chat-head { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px 9px; border-bottom: 1px solid var(--line); }
+.chat-head b { color: var(--teal-dark); font-size: 1rem; }
+.icon-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); display: grid; place-items: center; }
+.msgs { flex: 1; overflow-y: auto; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 10px; }
+.m { max-width: 88%; font-size: .94rem; line-height: 1.42; }
+.m.user { align-self: flex-end; background: var(--teal-dark); color: #fff; border-radius: 16px 4px 16px 16px; padding: 9px 13px; }
+.m.bot { align-self: flex-start; display: flex; gap: 7px; align-items: flex-start; }
+.bub { background: var(--bg); border: 1px solid var(--line); border-radius: 4px 16px 16px 16px; padding: 9px 12px; }
+.bub ul { margin: 7px 0 0; padding-left: 17px; display: flex; flex-direction: column; gap: 3px; }
+.bub .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.typing { display: inline-flex; gap: 4px; padding: 13px 15px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted-2); animation: blink 1s infinite; }
+.typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.chips { flex: none; display: flex; gap: 7px; overflow-x: auto; padding: 5px 12px 7px; scrollbar-width: none; }
+.chip { flex: none; border: 1.5px solid var(--teal-line); background: var(--teal-soft); border-radius: 20px; padding: 7px 12px; font-size: .84rem; font-weight: 700; white-space: nowrap; color: var(--teal-dark); }
+.chip:hover { border-color: var(--teal); }
+.composer { flex: none; display: flex; gap: 8px; padding: 8px 11px 4px; border-top: 1px solid var(--line); }
+.composer input { flex: 1; min-width: 0; font-size: .95rem; padding: 10px 14px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--app-bg); }
+.send { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--teal); color: #fff; display: grid; place-items: center; }
+.ai-note { flex: none; margin: 0; padding: 2px 14px 10px; font-size: .7rem; color: var(--muted-2); }
+.fab { position: absolute; right: 12px; bottom: 12px; z-index: 8; display: flex; align-items: center; gap: 7px; background: var(--teal); color: #fff; border: 0; border-radius: 999px; padding: 11px 16px 11px 13px; font-weight: 700; font-size: .92rem; box-shadow: 0 8px 18px -4px rgba(13, 148, 136, .55); }
+.fab[hidden] { display: none; }
+.scrim { position: absolute; inset: 0; background: rgba(15, 23, 42, .4); z-index: 20; display: none; }
+.scrim.on { display: block; }
+.modal { position: absolute; inset: 0; z-index: 30; background: rgba(15, 23, 42, .5); display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal.on { display: flex; }
+.modal .card { box-shadow: 0 18px 40px rgba(0, 0, 0, .3); }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 11px 16px; border-radius: 10px; font-size: .92rem; max-width: min(420px, calc(100% - 32px)); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 100; }
+#toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 900px) {
+  .stage { grid-template-columns: 1fr; justify-items: center; gap: 30px; }
+  .guide { width: 100%; padding-top: 0; }
+}
+@media (max-width: 440px) {
+  .page-head { padding-top: 16px; }
+  .page-head .lede, .qr-card { display: none; }
+  .stage { padding: 12px 8px 40px; }
+  .phone { width: 100%; height: 86vh; min-height: 600px; border-width: 6px; border-radius: 26px; }
+  .notch { display: none; }
+  .app-header { padding-top: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .player .bar i { width: 35%; }
+}
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>MoviAhorro</h1>
+  <p class="kicker">Prototipo navegable con chatbot · Segmento 50 a 59 años</p>
+  <p class="lede">Buscá un viaje, hablale a Movi y recorré las pantallas: te dice cómo viajar por el AMBA y con qué medio de pago te conviene hacerlo. Todo funciona con datos de ejemplo.</p>
+</header>
+
+<main class="stage">
+  <div class="phone-col">
+    <div class="screen-title" id="screenTitle">1. ¿Vamos?</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <header class="app-header">
+        <button class="app-logo" data-go="home">MoviAhorro</button>
+        <button class="user-avatar" data-go="datos" aria-label="Mis datos y permisos"><span aria-hidden="true">👤</span></button>
+      </header>
+
+      <div class="viewport">
+        <section class="scr" data-screen="home" id="scr-home" aria-label="¿Vamos?">
+          <div class="welcome-box">
+            <h2>¿Vamos?</h2>
+            <p>Tu guía para viajar y ahorrar en el AMBA.</p>
+            <form class="search-trip-box" id="searchForm">
+              <label for="fromIn">📍 ¿Dónde estás?</label>
+              <input id="fromIn" type="text" value="Plaza Italia, CABA" autocomplete="off">
+              <label for="toIn">🏁 ¿A dónde querés ir?</label>
+              <input id="toIn" type="text" value="Estación Lanús" autocomplete="off">
+              <button class="btn-primary" type="submit">Buscar opciones</button>
+            </form>
+          </div>
+          <div class="movi-card">
+            <div class="movi-say"><span class="bot-av" aria-hidden="true">IA</span><span><b>¡Hola, Juan! Soy Movi.</b> Si preferís, contame tu viaje con tus palabras y te digo cómo te conviene pagar.</span></div>
+            <button class="btn-primary" data-act="open-chat">💬 Hablar con Movi</button>
+          </div>
+          <div class="promo-banner"><span class="badge">PUBLICIDAD</span><div><strong>Café del Andén:</strong> café con medialuna a precio promocional mostrando la app.<i>No cambia tus opciones ni usa tus datos.</i></div></div>
+          <button class="trivia-teaser" data-go="comunidad"><span class="em" aria-hidden="true">🧠</span><span><b>Trivia del día</b><span>¿En qué año se inauguró la línea A del subte? Jugá en Comunidad.</span></span><span class="go" aria-hidden="true">➔</span></button>
+        </section>
+        <section class="scr" data-screen="navegacion" id="scr-navegacion" aria-label="Navegación"></section>
+        <section class="scr" data-screen="medios" id="scr-medios" aria-label="Mis medios de pago"></section>
+        <section class="scr" data-screen="viajes" id="scr-viajes" aria-label="Mis viajes"></section>
+        <section class="scr" data-screen="beneficios" id="scr-beneficios" aria-label="Beneficios y comunidad"></section>
+        <section class="scr" data-screen="comunidad" id="scr-comunidad" aria-label="Comunidad"></section>
+        <section class="scr" data-screen="datos" id="scr-datos" aria-label="Mis datos y permisos"></section>
+
+        <div class="scrim" id="scrim" data-act="close-chat"></div>
+        <div class="chat" id="chat" role="dialog" aria-label="Chat con Movi">
+          <div class="chat-head">
+            <b>💬 Movi, tu asistente</b>
+            <button class="icon-btn" data-act="close-chat" aria-label="Cerrar chat" id="closeChat"></button>
+          </div>
+          <div class="msgs" id="msgs" aria-live="polite"></div>
+          <div class="chips" id="chips"></div>
+          <form class="composer" id="composer">
+            <label for="chatInput" class="vh">Escribile a Movi</label>
+            <input id="chatInput" type="text" autocomplete="off" placeholder="Escribí tu mensaje…">
+            <button class="send" type="submit" aria-label="Enviar" id="sendBtn"></button>
+          </form>
+          <p class="ai-note">Movi es una IA y puede equivocarse. Precios y promos salen de una base verificada por personas.</p>
+        </div>
+        <button class="fab" id="fab" data-act="open-chat">💬 Preguntale a Movi</button>
+
+        <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <div class="card"><div class="card-pad">
+            <h4 id="modalTitle">¿Borrar todos tus datos?</h4>
+            <p>Se borran tus medios de pago, tu presupuesto, tus trayectos guardados y tus permisos. No se puede deshacer.</p>
+            <div class="row">
+              <button class="btn danger" data-act="wipe-confirm">Sí, borrar todo</button>
+              <button class="btn" data-act="wipe-cancel">Cancelar</button>
+            </div>
+          </div></div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav" aria-label="Secciones" id="tabs"></nav>
+    </div>
+    <p class="fine">Prototipo académico. Tarifas, tiempos, promociones, comercios y reportes de estaciones son ficticios. El chatbot es una simulación con respuestas guionadas.</p>
+  </div>
+
+  <aside class="guide">
+    <div class="qr-card" id="qrCard" hidden>
+      <div id="qrBox"></div>
+      <p><b>Probalo en tu celular</b>Escaneá el código con la cámara y se abre este mismo prototipo, sin instalar nada.</p>
+    </div>
+    <h2>Recorrido de la demo</h2>
+    <p class="sub">Cada parada lleva el teléfono a la pantalla que muestra esa idea del proyecto.</p>
+    <ol class="line" id="guideLine"></ol>
+    <h3>Probá el protocolo ético en el chat</h3>
+    <p class="sub">Cada botón le manda a Movi una pregunta difícil.</p>
+    <div class="tests" id="tests"></div>
+  </aside>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="qrcode.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var P = {
+    bus: '<rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M8 21v-3M16 21v-3"/><path d="M8.5 14.5h.01M15.5 14.5h.01"/>',
+    train: '<rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 10h12M9 21l1.5-4M15 21l-1.5-4"/>',
+    send: '<path d="M4 12l16-8-6 16-2.5-6.5L4 12z"/>',
+    x: '<path d="M6 6l12 12M18 6L6 18"/>',
+    play: '<path d="M8 5l11 7-11 7V5z" fill="currentColor"/>',
+    pause: '<path d="M8 5v14M16 5v14"/>'
+  };
+  function ic(n, s) { s = s || 22; return '<svg class="ic" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[n] + "</svg>"; }
+  function fmt(n) { return "$" + Math.round(n).toLocaleString("es-AR"); }
+  function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  var MAPS = "https://www.google.com/maps/dir/?api=1&origin=" + encodeURIComponent("Plaza Italia, Palermo, Buenos Aires") +
+    "&destination=" + encodeURIComponent("Estación Lanús, Lanús, Buenos Aires") + "&travelmode=transit";
+
+  /* ---------- Datos de ejemplo ---------- */
+  var OPTS = {
+    barata: {
+      label: "🟢 La más barata", bg: "bg-green", price: 850, time: "1 h 10 a 1 h 20 min", transfers: 2,
+      legs: [{ t: "bus", n: "152" }, { t: "train", n: "Roca" }, { t: "bus", n: "295" }],
+      ahorro: "Red SUBE + promo Cuenta DNI", pay: "QR de Cuenta DNI",
+      acc: ["warn", "♿ Ascensor de Estación Lanús sin confirmar: un solo reporte, de hace 9 días."],
+      why: [["Boletos de los 3 tramos", "$1.215"], ["Reintegro Cuenta DNI 30%", "−$365"], ["Total final", "$850"]],
+      note: "Hoy pagás $1.215 y te devuelven $365 en unos 5 días hábiles (tope de $5.000 por mes). Con SUBE, este mismo recorrido costaría $990: acá la promo gana.",
+      src: "Promo verificada el 10/11 en el sitio oficial del banco."
+    },
+    rapida: {
+      label: "⚡ La más rápida", bg: "bg-orange", price: 1800, time: "45 a 55 min", transfers: 1,
+      legs: [{ t: "subte", n: "D", c: "#008065" }, { t: "bus", n: "45" }],
+      ahorro: "Red SUBE", pay: "SUBE",
+      acc: ["ok", "♿ Estaciones con ascensor confirmado por relevamiento del equipo."],
+      why: [["Subte línea D", "$1.250"], ["Colectivo 45", "$700"], ["Descuento Red SUBE por combinar", "−$150"], ["Total", "$1.800"]],
+      note: "Es la más cara porque usa subte. Con SUBE mantenés el descuento por combinar viajes.",
+      src: "Cuadro tarifario oficial vigente."
+    },
+    intermedia: {
+      label: "⚖️ Intermedia", bg: "bg-gray", price: 1150, time: "55 a 65 min", transfers: 1,
+      legs: [{ t: "bus", n: "68" }, { t: "train", n: "Roca" }],
+      ahorro: "Red SUBE", pay: "SUBE",
+      acc: ["warn", "♿ Ascensor de Estación Lanús sin confirmar: un solo reporte, de hace 9 días."],
+      why: [["Colectivo 68 + tren Roca", "$1.390"], ["Descuento Red SUBE por combinar", "−$240"], ["Total", "$1.150"]],
+      note: "Equilibra precio y tiempo con un solo trasbordo. La regla que define la opción intermedia es pública.",
+      src: "Cuadro tarifario oficial vigente."
+    }
+  };
+
+  var INITIAL = {
+    medios: [
+      { id: 1, tipo: "SUBE", ent: "Tarjeta registrada", corto: "SUBE" },
+      { id: 2, tipo: "Billetera con QR", ent: "Mercado Pago", corto: "Mercado Pago" },
+      { id: 3, tipo: "Tarjeta de crédito", ent: "VISA · Banco Galicia", corto: "VISA Galicia" },
+      { id: 4, tipo: "Billetera con QR", ent: "Cuenta DNI · Banco Provincia", corto: "Cuenta DNI" }
+    ],
+    budget: { total: 40000, spent: 18200 },
+    saved: [{ id: 1, name: "Casa ➔ Trabajo", route: "Estación Lanús ➔ Plaza Italia", when: "Lo guardaste vos el 3/11" }],
+    recent: [{ id: 1, when: "Hoy, 08:10 hs", route: "Estación Lanús ➔ Plaza Italia", save: "Ahorro: $365 (Cuenta DNI)", left: "Se borra en 15 h" }],
+    consent: { medios: true, budget: true, learn: true, access: false, social: false },
+    prefs: { fastFirst: false, nudge: "pending", filters: { fewer: false, walk: false, night: false } }
+  };
+
+  var S = clone(INITIAL);
+  S.screen = "home"; S.chatOpen = false; S.msgs = []; S.typing = false; S.chips = [];
+  S.trivia = { i: 0, picked: null }; S.playing = null;
+  S.reports = [
+    { st: "Retiro", estado: "Ascensor funciona", when: "hoy" },
+    { st: "Plaza Miserere", estado: "Escalera mecánica rota", when: "ayer" },
+    { st: "Estación Lanús", estado: "Ascensor no funciona", when: "hace 9 días" }
+  ];
+
+  var TRIVIA = [
+    { q: "¿En qué año se inauguró la línea A del subte, la primera de América Latina?", o: ["1913", "1938", "1955"], a: 0,
+      e: "Se inauguró en diciembre de 1913. Fue el primer subte de América Latina y del hemisferio sur." },
+    { q: "Si combinás colectivo y tren, ¿con qué medio mantenés el descuento de la Red SUBE?", o: ["Con cualquier tarjeta de crédito", "Con la SUBE, física o digital", "Con cualquier billetera con QR"], a: 1,
+      e: "El descuento por combinar viajes se mantiene si pagás con la SUBE, física o digital. Con tarjeta o QR se pierde." },
+    { q: "¿Cuánto descuento da la Tarifa Social Federal?", o: ["25%", "40%", "55%"], a: 2,
+      e: "La Tarifa Social Federal da un 55% de descuento, y solo se aplica si pagás con SUBE." },
+    { q: "Plaza Miserere y Once, ¿son el mismo lugar?", o: ["Sí, la estación Plaza Miserere de la línea A está junto a la estación Once del tren Sarmiento", "No, están en barrios distintos"], a: 0,
+      e: "Es el mismo nodo: mucha gente dice Once para hablar de Plaza Miserere." }
+  ];
+  var EPISODES = [
+    { n: 1, t: "La línea A: el primer subte de América Latina", d: "12 min" },
+    { n: 2, t: "Red SUBE explicada sin números", d: "9 min" },
+    { n: 3, t: "Historias de andén: Constitución", d: "15 min" }
+  ];
+  var TIPOS = ["Tarjeta de débito", "Tarjeta de crédito", "Billetera con QR", "SUBE"];
+  var ENTIDADES = ["Banco Nación", "Banco Provincia (Cuenta DNI)", "Banco Ciudad", "Banco Galicia", "Santander", "BBVA", "Macro", "Brubank", "Mercado Pago", "Ualá", "MODO", "Naranja X", "Personal Pay", "Otra entidad"];
+
+  var TABS = [
+    { id: "home", e: "🏠", l: "¿Vamos?" },
+    { id: "navegacion", e: "🗺️", l: "Navegación" },
+    { id: "medios", e: "💳", l: "Medios" },
+    { id: "viajes", e: "🚌", l: "Viajes" },
+    { id: "beneficios", e: "⭐", l: "Beneficios" },
+    { id: "comunidad", e: "👥", l: "Comunidad" }
+  ];
+  var TITLES = { home: "1. ¿Vamos?", navegacion: "2. Navegación", medios: "3. Mis medios de pago", viajes: "4. Mis viajes", beneficios: "5. Beneficios y Puntos SUBE", comunidad: "6. Comunidad", datos: "Mis datos y permisos" };
+
+  var GUIDE = [
+    { act: "open-chat", t: "Chatbot siempre a mano", d: "Desde cualquier pantalla, el botón Preguntale a Movi abre el chat." },
+    { go: "navegacion", t: "Tres opciones y su porqué", d: "La más barata, la más rápida y una intermedia, con el cálculo a la vista y el enlace a Google Maps." },
+    { act: "demo-nudge", t: "Personalización visible", d: "Si la app nota un hábito, pregunta antes de cambiar el orden. Nada se modifica a escondidas." },
+    { go: "medios", t: "Medios de pago sin números", d: "Se guardan cifrados solo en el teléfono: una filtración del servidor no expone quién tiene qué tarjeta." },
+    { go: "datos", t: "Mis datos: ver, corregir, borrar", d: "Permisos por separado y los principios de protección de datos del documento de Fundar." },
+    { go: "viajes", t: "Viajes que se borran solos", d: "El historial dura 24 horas. Solo quedan los trayectos que guardás vos." },
+    { go: "comunidad", t: "Trivia, podcast y canal", d: "En Comunidad: la trivia del día, el podcast Viajá liviano y el canal de difusión de WhatsApp." },
+    { act: "goto-report", t: "Reportes de accesibilidad", d: "Como en Waze, pero los reportes se publican como datos abiertos y necesitan coincidir para valer." }
+  ];
+  var TESTS = [
+    { k: "Grounding", q: "¿Hay promo del Banco Ciudad para el subte?" },
+    { k: "Límites de automatización", q: "Uso silla de ruedas y voy a Lanús" },
+    { k: "Voces ausentes", q: "Tengo tarifa social, ¿me conviene pagar con la tarjeta?" },
+    { k: "Perspectivas alternativas", q: "Vuelvo de noche a Lanús, ¿cuál me conviene?" },
+    { k: "Privacidad", q: "¿Qué datos guardan de mí?" },
+    { k: "Ecuación SUBE vs. tarjeta", q: "¿Me conviene pagar con tarjeta?" }
+  ];
+  var DEFAULT_CHIPS = ["De Plaza Italia a Lanús", "¿Me conviene pagar con tarjeta?", "Uso silla de ruedas", "¿Hay promo del Banco Ciudad?", "Vuelvo de noche", "¿Qué datos guardan de mí?"];
+
+  /* ---------- Navegación ---------- */
+  function go(screen) {
+    S.screen = screen; S.chatOpen = false;
+    renderScreens();
+    var el = document.querySelector('.scr[data-screen="' + screen + '"]');
+    if (el) el.scrollTop = 0;
+  }
+  function renderScreens() {
+    document.querySelectorAll(".scr").forEach(function (s) { s.classList.toggle("on", s.dataset.screen === S.screen); });
+    if (S.screen === "navegacion") renderNav();
+    if (S.screen === "medios") renderMedios();
+    if (S.screen === "viajes") renderViajes();
+    if (S.screen === "beneficios") renderBeneficios();
+    if (S.screen === "comunidad") renderComunidad();
+    if (S.screen === "datos") renderDatos();
+    $("#screenTitle").textContent = TITLES[S.screen];
+    $("#tabs").innerHTML = TABS.map(function (t) {
+      return '<button class="nav-link" data-go="' + t.id + '"' + (t.id === S.screen ? ' aria-current="page"' : "") + '><span class="em" aria-hidden="true">' + t.e + "</span><span>" + t.l + "</span></button>";
+    }).join("");
+    renderChatLayer();
+  }
+  function renderChatLayer() {
+    $("#chat").classList.toggle("on", S.chatOpen);
+    $("#scrim").classList.toggle("on", S.chatOpen);
+    $("#fab").hidden = S.chatOpen;
+    if (S.chatOpen) scrollMsgs();
+  }
+  function openChat() { S.chatOpen = true; renderChatLayer(); setTimeout(function () { $("#chatInput").focus(); }, 30); }
+
+  /* ---------- Chat ---------- */
+  function renderMsgs() {
+    var html = S.msgs.map(function (m) {
+      if (m.from === "user") return '<div class="m user">' + esc(m.text) + "</div>";
+      var acts = m.acts && m.acts.length ? '<div class="acts">' + m.acts.map(function (a) {
+        return '<button class="btn small' + (a.primary ? " primary" : "") + '" data-act="' + a.act + '">' + a.label + "</button>";
+      }).join("") + "</div>" : "";
+      return '<div class="m bot"><span class="bot-av" aria-label="Movi, asistente de IA">IA</span><div class="bub">' + m.html + acts + "</div></div>";
+    }).join("");
+    if (S.typing) html += '<div class="m bot"><span class="bot-av">IA</span><div class="bub typing" aria-label="Movi está escribiendo"><i></i><i></i><i></i></div></div>';
+    $("#msgs").innerHTML = html;
+    scrollMsgs();
+  }
+  function scrollMsgs() { var m = $("#msgs"); m.scrollTop = m.scrollHeight; }
+  function renderChips() { $("#chips").innerHTML = S.chips.map(function (c) { return '<button class="chip" data-send="' + esc(c) + '">' + esc(c) + "</button>"; }).join(""); }
+  function setChips(list) { S.chips = list; renderChips(); }
+
+  var queue = Promise.resolve();
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function bot(html, acts) {
+    queue = queue.then(function () {
+      S.typing = true; renderMsgs();
+      return sleep(reduce ? 120 : 650).then(function () { S.typing = false; S.msgs.push({ from: "bot", html: html, acts: acts || [] }); renderMsgs(); });
+    });
+    return queue;
+  }
+  function userSays(text) { S.msgs.push({ from: "user", text: text }); renderMsgs(); }
+  function mediosText() {
+    var n = S.medios.map(function (m) { return m.corto; });
+    if (!n.length) return "";
+    if (n.length === 1) return n[0];
+    return n.slice(0, -1).join(", ") + " y " + n[n.length - 1];
+  }
+  function greet() {
+    var body = S.medios.length && S.consent.medios
+      ? "Tengo guardados tus medios de pago: <b>" + mediosText() + "</b>. Están solo en este teléfono, sin números de tarjeta."
+      : "Todavía no estoy usando medios de pago tuyos, así que por ahora calculo todo con SUBE.";
+    S.msgs.push({ from: "bot", html: "¡Hola, Juan! ¿A dónde viajamos hoy?<br><br>" + body, acts: [] });
+    S.chips = DEFAULT_CHIPS.slice();
+  }
+  function send(text) {
+    text = text.trim(); if (!text) return;
+    userSays(text); setChips([]); respond(text);
+    queue.then(function () { if (!S.chips.length) setChips(DEFAULT_CHIPS.slice()); });
+  }
+
+  function respond(raw) {
+    var t = norm(raw);
+    if (/tarifa social|jubilad|pensionad/.test(t)) return rSocial();
+    if (/(mis datos|que datos|privacidad|borrar|filtracion|guardan|cambridge)/.test(t)) return rPrivacy();
+    if (/silla|ruedas|movilidad|accesib|ascensor|escalera|rampa|baston|muleta/.test(t)) return rAccess();
+    if (/promo|descuento|reintegro|beneficio/.test(t)) return rPromo(t);
+    if (/tarjeta|qr|pagar con|conviene pagar|debito|credito/.test(t)) return rPay();
+    if (/noche|madrugada|oscur|insegur|segura|seguro de/.test(t)) return rNight();
+    if (/trivia|podcast|canal|whatsapp/.test(t)) return rCommunity();
+    if (/lanus|plaza italia|palermo|como llego|ir a |ir de |voy a|viajar|viajo|desde|hasta/.test(t)) return rRoute(t);
+    if (/rapid/.test(t)) return bot("La más rápida es <b>Subte D + colectivo 45</b>: entre 45 y 55 minutos, " + fmt(1800) + " con SUBE.", [{ label: "Ver las 3 opciones", act: "results", primary: true }]);
+    if (/por que|porque|barat/.test(t)) return rWhy();
+    if (/gracias/.test(t)) return bot("¡De nada! Buen viaje.");
+    if (/^(hola|buenas|buen dia|que tal)/.test(t)) return bot("¡Hola! Contame desde dónde y hasta dónde viajás. Por ejemplo: de Plaza Italia a Lanús.");
+    return bot("Perdón, no te entendí. Todavía soy un prototipo: contame desde dónde y hasta dónde viajás, por ejemplo «de Plaza Italia a Lanús», o tocá una sugerencia.");
+  }
+  function rRoute(t) {
+    if (!/lanus|plaza italia|palermo/.test(t)) bot("En este prototipo cargamos un solo viaje de ejemplo: <b>Plaza Italia ➔ Estación Lanús</b>. Te muestro ese.");
+    var extra = "";
+    if (S.consent.social) extra = "<br><br>Como tenés Tarifa Social, te conviene pagar todo con SUBE: la promo de Cuenta DNI no compensa el 55% que perderías.";
+    else if (!S.consent.medios || !S.medios.length) extra = "<br><br>No estoy usando tus medios de pago, así que calculé todo con SUBE.";
+    bot("Listo. De <b>Plaza Italia</b> a <b>Estación Lanús</b> encontré 3 opciones con tus medios de pago:<ul>" +
+      "<li><b>Más barata:</b> " + fmt(850) + " pagando con QR de Cuenta DNI</li>" +
+      "<li><b>Más rápida:</b> 45 a 55 min, " + fmt(1800) + "</li>" +
+      "<li><b>Intermedia:</b> " + fmt(1150) + " con SUBE, un solo trasbordo</li></ul>" + extra,
+      [{ label: "Ver las 3 opciones", act: "results", primary: true }]);
+    setChips(["¿Por qué la más barata?", "¿Cuál es la más rápida?", "Vuelvo de noche"]);
+  }
+  function rWhy() {
+    bot("La más barata sale " + fmt(850) + " porque pagás con QR de Cuenta DNI: los 3 boletos suman " + fmt(1215) + " y te devuelven " + fmt(365) + " en unos días. Con SUBE, ese mismo recorrido costaría " + fmt(990) + ". Hoy la promo gana.",
+      [{ label: "Ver el cálculo", act: "results", primary: true }]);
+  }
+  function rPay() {
+    bot("Depende del viaje. En el AMBA, el boleto con tarjeta o QR cuesta lo mismo que con una SUBE registrada. Pero con esos medios perdés el descuento por combinar viajes (Red SUBE) y, si la tenés, la Tarifa Social.<br><br>Conviene solo cuando una promo lo compensa. En tu viaje a Lanús, la promo de Cuenta DNI sí gana.",
+      [{ label: "Ver las 3 opciones", act: "results", primary: true }]);
+  }
+  function rSocial() {
+    bot("Importante: si tenés Tarifa Social, seguí pagando con la SUBE. Con tarjeta o QR perdés el 55% de descuento y también el descuento por combinar viajes. Ninguna promo de tus medios compensa eso hoy.");
+    bot("¿Querés que lo tenga en cuenta siempre? Se guarda solo en tu teléfono.",
+      [{ label: "Sí, tenelo en cuenta", act: "social-yes", primary: true }, { label: "No, gracias", act: "social-no" }]);
+  }
+  function rAccess() {
+    bot("Antes que nada: <b>no tengo confirmado</b> que el ascensor de la Estación Lanús esté funcionando. Hay un solo reporte, de hace 9 días, y necesito al menos 3 que coincidan.");
+    bot("No te voy a recomendar ese recorrido sin avisarte. Puedo buscar opciones solo en colectivos de piso bajo, aunque tarden más.<br><br>¿Querés que recuerde que necesitás accesibilidad? Es un dato sensible: es optativo y queda solo en este teléfono.",
+      [{ label: "Sí, recordalo", act: "access-yes", primary: true }, { label: "No lo guardes", act: "access-no" }, { label: "Reportar una estación", act: "goto-report" }]);
+  }
+  function rPromo(t) {
+    var see = [{ label: "Ver beneficios", act: "beneficios" }];
+    if (/dni|provincia/.test(t)) return bot("Encontré una promo verificada: <b>Cuenta DNI</b>, 30% de reintegro en transporte pagando con QR, con tope de $5.000 por mes. La chequeamos el 10/11 en el sitio oficial del banco.", see);
+    if (/galicia|visa/.test(t)) return bot("Para tu VISA de Banco Galicia no hay promos de transporte cargadas este mes. Si aparece una, la verificamos y te aviso.");
+    if (/mercado pago/.test(t)) return bot("Para Mercado Pago no hay promos de transporte cargadas este mes.");
+    if (/banco|naranja|uala|modo|santander|bbva|macro|ciudad|nacion|brubank|personal pay|patagonia|icbc|hsbc/.test(t))
+      return bot("No tengo registrada ninguna promoción de ese banco en mi base verificada. <b>Prefiero decirte que no sé antes que inventarte una.</b><br><br>Si conocés una, contanos y la chequeamos con la fuente oficial antes de mostrarla.");
+    return bot("De tus medios, este mes hay una sola promo verificada: <b>Cuenta DNI</b>, 30% de reintegro con tope de $5.000. Para VISA Galicia y Mercado Pago no hay promos de transporte cargadas.", see);
+  }
+  function rNight() {
+    bot("De noche puedo priorizar viajes con menos trasbordos y esperas cortas en lugares con gente, aunque cuesten un poco más. ¿Activo ese filtro?",
+      [{ label: "Sí, activalo", act: "night-yes", primary: true }, { label: "No, así está bien", act: "night-no" }]);
+  }
+  function rPrivacy() {
+    bot("Guardo solo lo que me autorizaste: qué medios de pago tenés (sin números), tu presupuesto y los trayectos que guardaste vos. Todo queda en este teléfono y los viajes se borran a las 24 horas.<br><br>No vendo ni comparto tus datos. Podés verlos, corregirlos o borrarlos cuando quieras.",
+      [{ label: "Ver mis datos", act: "datos", primary: true }]);
+  }
+  function rCommunity() {
+    bot("En Comunidad tenés la trivia del día, el podcast <b>Viajá liviano</b> y el canal de WhatsApp con una promo verificada por semana.",
+      [{ label: "Ir a Comunidad", act: "goto-comunidad", primary: true }]);
+  }
+
+  /* ---------- 6. Comunidad: trivia ---------- */
+  function triviaHtml() {
+    var tq = TRIVIA[S.trivia.i], picked = S.trivia.picked;
+    var answers = tq.o.map(function (o, i) {
+      var cls = "ans";
+      if (picked !== null) { if (i === tq.a) cls += " right"; else if (i === picked) cls += " wrong"; }
+      return '<button class="' + cls + '" data-act="trivia" data-i="' + i + '"' + (picked !== null ? " disabled" : "") + ">" + o + "</button>";
+    }).join("");
+    var fb = picked !== null ? '<p class="fb">' + (picked === tq.a ? "<b>¡Bien!</b> " : "<b>Casi.</b> ") + tq.e + '</p><button class="btn small" data-act="trivia-next">Otra pregunta</button>' : "";
+    return '<span class="qtag">🧠 Trivia del día · ' + (S.trivia.i + 1) + " de " + TRIVIA.length + "</span><h4>" + tq.q + '</h4><div class="opts-q">' + answers + "</div>" + fb + '<p class="sub">Sin puntos ni rankings: jugás si tenés ganas.</p>';
+  }
+
+  /* ---------- 2. Navegación ---------- */
+  function legsHtml(legs) {
+    return legs.map(function (l) {
+      if (l.t === "subte") return '<span class="b subte" style="--c:' + l.c + '" aria-label="Subte línea ' + l.n + '">' + l.n + "</span>";
+      if (l.t === "train") return '<span class="b train" aria-label="Tren ' + l.n + '">' + ic("train", 16) + l.n + "</span>";
+      return '<span class="b" aria-label="Colectivo ' + l.n + '">' + ic("bus", 16) + l.n + "</span>";
+    }).join('<span class="arr" aria-hidden="true">➔</span>');
+  }
+  function optCard(id) {
+    var o = OPTS[id], f = S.prefs.filters, warns = "";
+    if (id === "barata" && f.night) warns += '<p class="acc warn">🌙 De noche: espera de hasta 15 min en Constitución.</p>';
+    if (id === "barata" && S.consent.social) warns += '<p class="acc warn">Con Tarifa Social no te conviene: perderías el 55% de descuento.</p>';
+    var rows = o.why.map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
+    return '<article class="card"><div class="card-header ' + o.bg + '"><span>' + o.label + '</span><span class="price">' + fmt(o.price) + "</span></div>" +
+      '<div class="card-content">' +
+      "<p><strong>Tiempo:</strong> " + o.time + " · " + o.transfers + (o.transfers === 1 ? " trasbordo" : " trasbordos") + "</p>" +
+      '<div class="legs">' + legsHtml(o.legs) + "</div>" +
+      "<p><strong>Ahorro:</strong> " + o.ahorro + "</p>" +
+      "<p><strong>Pagás con:</strong> " + o.pay + "</p>" +
+      '<p class="acc ' + o.acc[0] + '">' + o.acc[1] + "</p>" + warns +
+      '<details class="why"><summary>¿Por qué esta opción?</summary><table>' + rows + "</table><p>" + o.note + '</p><p class="src">Fuente: ' + o.src + " (dato de ejemplo)</p></details>" +
+      '<a class="maps" href="' + MAPS + '" target="_blank" rel="noopener">🗺️ Ver ruta en Google Maps</a>' +
+      "</div></article>";
+  }
+  function mapSvg() {
+    return '<svg viewBox="0 0 340 112" role="img" aria-label="Recorrido esquemático de Plaza Italia a Estación Lanús">' +
+      '<rect width="340" height="112" fill="#e2e8f0"/><g stroke="#cbd5e1" stroke-width="2">' +
+      '<path d="M0 24h340M0 56h340M0 88h340M40 0v112M110 0v112M180 0v112M250 0v112M310 0v112"/></g>' +
+      '<path d="M52 24 C120 28 150 56 196 64 S270 90 298 94" fill="none" stroke="#0d9488" stroke-width="5" stroke-linecap="round"/>' +
+      '<circle cx="52" cy="24" r="7" fill="#fff" stroke="#0d9488" stroke-width="4"/>' +
+      '<circle cx="196" cy="64" r="5" fill="#fff" stroke="#334155" stroke-width="3"/>' +
+      '<circle cx="298" cy="94" r="7" fill="#fff" stroke="#ea580c" stroke-width="4"/>' +
+      '<g font-family="Segoe UI, Tahoma, Verdana, sans-serif" font-size="11" font-weight="700" fill="#1e293b">' +
+      '<text x="64" y="18">Plaza Italia</text><text x="204" y="57">Constitución</text><text x="222" y="109">Estación Lanús</text></g></svg>';
+  }
+  function renderNav() {
+    var order = S.prefs.fastFirst ? ["rapida", "barata", "intermedia"] : ["barata", "rapida", "intermedia"];
+    var f = S.prefs.filters;
+    if (f.fewer) order = order.slice().sort(function (a, b) { return OPTS[a].transfers - OPTS[b].transfers; });
+    if (f.night || S.consent.social) order = order.filter(function (x) { return x !== "barata"; }).concat("barata");
+    var notes = [];
+    if (S.prefs.fastFirst) notes.push('Mostrando primero la más rápida porque lo elegiste vos. <button class="link-btn" data-go="datos">Cambiarlo en Mis datos</button>');
+    if (f.fewer) notes.push("Priorizando menos trasbordos.");
+    if (f.walk) notes.push("Todas estas opciones tienen menos de 6 cuadras de caminata.");
+    if (f.night) notes.push("Filtro de noche activo: la más barata baja al final por la espera en Constitución.");
+    if (S.consent.social) notes.push("Calculado con tu Tarifa Social: te conviene pagar todo con SUBE.");
+    var nudge = (S.prefs.nudge === "pending" && S.consent.learn && !S.prefs.fastFirst)
+      ? '<div class="nudge"><p><b>Notamos algo:</b> las últimas 3 veces elegiste la más rápida. ¿Querés que te la mostremos primero?</p>' +
+        '<div class="row"><button class="btn small primary" data-act="nudge-yes">Sí, mostrámela primero</button><button class="btn small" data-act="nudge-no">No, dejá el orden</button></div>' +
+        '<p class="sub">Nunca cambiamos el orden sin preguntarte.</p></div>' : "";
+    var cards = order.map(optCard);
+    cards.splice(1, 0, '<div class="promo-banner"><span class="badge">PUBLICIDAD</span><div><strong>Café del Andén</strong>, en Constitución: café con medialuna a precio promocional mostrando la app.<i>No cambia el orden de tus opciones ni usa tus datos.</i></div></div>');
+    var fl = [["fewer", "Menos trasbordos"], ["walk", "Menos caminata"], ["night", "🌙 Evitar esperas de noche"]].map(function (x) {
+      return '<button class="filter" data-act="filter" data-f="' + x[0] + '" aria-pressed="' + (f[x[0]] ? "true" : "false") + '">' + x[1] + "</button>";
+    }).join("");
+    $("#scr-navegacion").innerHTML =
+      '<div class="route-summary"><span>📍 <strong>Plaza Italia</strong> ➔ 🏁 <strong>Estación Lanús</strong></span><button class="link-btn" data-go="home">Cambiar</button></div>' +
+      '<div class="map-mock">' + mapSvg() + '<div class="map-cap">🗺️ Mapa ilustrativo de la ruta AMBA</div></div>' +
+      '<div class="filters" role="group" aria-label="Filtros">' + fl + "</div>" +
+      nudge + notes.map(function (n) { return '<p class="note">' + n + "</p>"; }).join("") + cards.join("") +
+      '<p class="sub">Google Maps puede sugerir otra combinación: no sabe qué promos tenés. Los tiempos van en rangos porque dependen de la frecuencia y el tránsito.</p>';
+  }
+
+  /* ---------- 3. Medios ---------- */
+  function renderMedios() {
+    var h = '<h3 class="t">Mis medios de pago</h3><p class="sub">Los usamos solo para calcular qué combinación te sale más barata.</p>';
+    h += S.medios.length ? S.medios.map(function (m) {
+      var em = m.tipo === "Billetera con QR" ? "📱" : "💳";
+      return '<div class="payment-card"><span class="l"><b>' + em + " " + esc(m.corto) + "</b><span>" + esc(m.tipo) + " · " + esc(m.ent) + '</span></span><span class="r"><span class="status">🔒 En tu teléfono</span><button class="link-btn" data-act="del-medio" data-id="' + m.id + '">Quitar</button></span></div>';
+    }).join("") : '<p class="empty">No tenés medios cargados. Sin ellos, calculamos todo con SUBE.</p>';
+    h += S.adding
+      ? '<div class="add-form"><label class="field" for="selTipo">Tipo<select id="selTipo">' + TIPOS.map(function (x) { return "<option>" + x + "</option>"; }).join("") + "</select></label>" +
+        '<label class="field" for="selEnt">Banco o billetera<select id="selEnt">' + ENTIDADES.map(function (x) { return "<option>" + x + "</option>"; }).join("") + "</select></label>" +
+        '<p class="sub">Solo te pedimos el tipo y la entidad. Nunca números de tarjeta, claves ni códigos de seguridad.</p>' +
+        '<div class="row"><button class="btn primary" data-act="add-medio">Agregar</button><button class="btn" data-act="add-cancel">Cancelar</button></div></div>'
+      : '<button class="btn-primary" data-act="add-open">+ Cargá un nuevo medio de pago</button>';
+    if (S.medios.some(function (m) { return /DNI/.test(m.corto); }))
+      h += '<div class="promo-banner"><span class="badge">BENEFICIO</span><div><strong>Cuenta DNI:</strong> 30% de reintegro en transporte pagando con QR.<i>Verificado el 10/11 con la fuente oficial.</i></div></div>';
+    h += '<div class="disclaimer-box">🔒 <b>Aviso de seguridad:</b> MoviAhorro nunca te va a pedir el número de ninguna tarjeta o cuenta bancaria. Tus medios se guardan cifrados en este teléfono, no en nuestros servidores: si alguna vez hubiera una filtración en nuestros sistemas, no habría ahí ninguna lista de quién tiene qué tarjeta para venderle o mostrarle publicidad dirigida.</div>';
+    $("#scr-medios").innerHTML = h;
+  }
+
+  /* ---------- 4. Viajes ---------- */
+  function renderViajes() {
+    var h = '<h3 class="t">Mis viajes</h3>';
+    if (S.consent.budget) {
+      var pct = Math.min(100, S.budget.spent / S.budget.total * 100);
+      h += '<div class="trip-item"><p><strong>Presupuesto de noviembre</strong></p><p>' + fmt(S.budget.spent) + " de " + fmt(S.budget.total) + '</p><div class="bar"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
+        '<p class="sub">Te quedan ' + fmt(S.budget.total - S.budget.spent) + '. Lo fijaste vos: es una referencia, no un límite.</p><p><button class="link-btn" data-act="budget-off">Desactivar presupuesto</button></p></div>';
+    } else h += '<p class="empty">No estás usando presupuesto mensual. Podés activarlo en Mis datos.</p>';
+    h += '<div class="trip-item"><p><strong>Ahorro estimado este mes</strong></p><p class="big">' + fmt(4350) + '</p><p class="sub">Frente a pagar todos tus viajes sin descuentos ni promos.</p></div>';
+    h += '<h3 class="t">Trayectos guardados</h3>';
+    h += S.saved.length ? S.saved.map(function (s) {
+      return '<div class="trip-item"><p><strong>⭐ ' + s.name + "</strong></p><p>" + s.route + '</p><p class="sub">' + s.when + ' · <button class="link-btn" data-act="del-saved" data-id="' + s.id + '">Quitar</button></p></div>';
+    }).join("") : '<p class="empty">No tenés trayectos guardados.</p>';
+    h += '<h3 class="t">Últimas 24 horas</h3>';
+    h += S.recent.length ? S.recent.map(function (r) {
+      return '<div class="trip-item"><p><strong>' + r.when + "</strong></p><p>" + r.route + '</p><p class="save">' + r.save + '</p><p class="sub">🕒 ' + r.left + ' · <button class="link-btn" data-act="del-recent" data-id="' + r.id + '">Borrar ahora</button></p></div>';
+    }).join("") : '<p class="empty">No hay viajes de las últimas 24 horas.</p>';
+    h += '<div class="disclaimer-box">🕒 <b>Sin historial:</b> cada viaje se borra a las 24 horas, salvo los trayectos que guardás vos.</div>';
+    $("#scr-viajes").innerHTML = h;
+  }
+
+  /* ---------- 5. Beneficios y comunidad ---------- */
+  function renderBeneficios() {
+    var rows = S.medios.length ? S.medios.map(function (m) {
+      if (/DNI/.test(m.corto)) return '<div class="benefit-card ok"><p>📱 <strong>' + esc(m.corto) + '</strong></p><p>30% de reintegro en transporte pagando con QR · tope de $5.000 por mes · hasta el 30/11.</p><p class="sub">✅ Verificada el 10/11 con la fuente oficial</p></div>';
+      if (m.tipo === "SUBE") return '<div class="benefit-card ok"><p>💳 <strong>SUBE</strong></p><p>Red SUBE: descuento automático al combinar viajes. Es el único medio que mantiene la Tarifa Social.</p></div>';
+      return '<div class="benefit-card none"><p><strong>' + esc(m.corto) + '</strong></p><p>Sin promos de transporte este mes.</p><p class="sub">Revisado el 10/11</p></div>';
+    }).join("") : '<p class="empty">Cargá tus medios de pago para ver qué promos tenés.</p>';
+
+    $("#scr-beneficios").innerHTML =
+      '<h3 class="t">Promos de tus medios</h3>' + rows +
+      '<p class="sub">Solo mostramos promos verificadas en fuentes oficiales. Si no hay, te lo decimos.</p>' +
+      '<h3 class="t">Beneficios y Puntos SUBE</h3><p class="sub">Comercios para cargar la SUBE con descuentos.</p>' +
+      '<div class="map-mock"><svg viewBox="0 0 340 100" role="img" aria-label="Mapa esquemático con dos comercios adheridos"><rect width="340" height="100" fill="#e2e8f0"/><g stroke="#cbd5e1" stroke-width="2"><path d="M0 20h340M0 50h340M0 80h340M50 0v100M130 0v100M210 0v100M290 0v100"/></g>' +
+      '<g fill="#d97706"><circle cx="130" cy="50" r="9"/><circle cx="250" cy="20" r="9"/></g><g fill="#fff" font-family="Segoe UI, Tahoma, sans-serif" font-weight="700" font-size="11" text-anchor="middle"><text x="130" y="54">1</text><text x="250" y="24">2</text></g></svg>' +
+      '<div class="map-cap">📍 Mapa AMBA: puntos de carga SUBE</div></div>' +
+      '<div class="benefit-card"><p>🏪 <strong>1. Kiosco El Sol (Av. Corrientes 4500)</strong></p><p class="hl">🎁 <span class="code">Código: MVSUBE10</span> (10% en café o golosinas al recargar).</p></div>' +
+      '<div class="benefit-card"><p>📚 <strong>2. Librería Andén (Av. Santa Fe 3200)</strong></p><p class="hl">🎁 <span class="code">Código: MOVILIBRO</span> (regalo sorpresa).</p></div>' +
+      '<p class="sub">Comercios adheridos de ejemplo. No reciben tus datos: solo ven el código.</p>' +
+      '';
+  }
+
+  function renderComunidad() {
+    var eps = EPISODES.map(function (e) {
+      var on = S.playing === e.n;
+      return '<div class="ep"><button class="play" data-act="play" data-n="' + e.n + '" aria-label="' + (on ? "Pausar" : "Escuchar") + " episodio " + e.n + '">' + ic(on ? "pause" : "play", 16) + '</button><span class="txt"><b>Ep. ' + e.n + ". " + e.t + "</b><span>" + e.d + "</span></span></div>";
+    }).join("");
+    var player = S.playing ? '<div class="player"><span>🎧 Reproduciendo Ep. ' + S.playing + ' (simulado)</span><div class="bar"><i></i></div></div>' : "";
+    var reports = S.reports.map(function (r) { return '<p>• <strong>' + esc(r.st) + "</strong>: " + esc(r.estado) + ' <span class="sub">(' + esc(r.when) + ")</span></p>"; }).join("");
+
+    $("#scr-comunidad").innerHTML =
+      '<h3 class="t">👥 Comunidad</h3><p class="sub">Para hacer el viaje más liviano. Todo es optativo.</p>' +
+      '<div class="card"><div class="card-pad">' + triviaHtml() + '</div></div>' +
+      '<div class="card"><div class="card-pad"><h4>🎧 Podcast Viajá liviano</h4><p class="sub">Historias y curiosidades del transporte del AMBA para que el viaje pese menos. También funciona por fuera de la app.</p>' + eps + player + "</div></div>" +
+      '<div class="card"><div class="card-pad"><h4>📢 Canal de difusión de WhatsApp</h4><p>Una promo verificada por semana, sin spam. El canal no ve tus medios de pago: es solo una puerta de entrada a la app.</p><button class="btn-primary" data-act="join">Unirme al canal</button></div></div>' +
+      '<div class="card" id="report"><div class="card-pad"><h4>♿ Contanos cómo está tu estación</h4>' +
+      '<label class="field" for="repSt">Estación<select id="repSt"><option>Estación Lanús</option><option>Constitución</option><option>Retiro</option><option>Plaza Miserere</option></select></label>' +
+      '<label class="field" for="repEs">Estado<select id="repEs"><option>Ascensor funciona</option><option>Ascensor no funciona</option><option>Escalera mecánica rota</option><option>Rampa en buen estado</option></select></label>' +
+      '<button class="btn-primary" data-act="report">Enviar reporte</button>' +
+      '<p class="sub">Es optativo. Con 3 reportes que coinciden actualizamos el estado de la estación, y los reportes se publican como datos abiertos.</p>' +
+      "<h4>Reportes recientes</h4>" + reports + "</div></div>";
+  }
+
+  /* ---------- Mis datos ---------- */
+  function sw(key, title, desc, on) {
+    return '<div class="sw-row"><span class="txt"><b id="lbl-' + key + '">' + title + "</b><span>" + desc + '</span></span><button class="sw" role="switch" aria-checked="' + (on ? "true" : "false") + '" aria-labelledby="lbl-' + key + '" data-act="sw" data-k="' + key + '"></button></div>';
+  }
+  function renderDatos() {
+    var c = S.consent;
+    var facts = [
+      ["Medios de pago", S.medios.length ? S.medios.length + " (" + esc(mediosText()) + "), sin números" : "Ninguno"],
+      ["Presupuesto", c.budget ? fmt(S.budget.total) + " por mes" : "No usás"],
+      ["Trayectos guardados", String(S.saved.length)],
+      ["Viajes últimas 24 h", String(S.recent.length)],
+      ["Accesibilidad", c.access ? "Sí, solo en el teléfono" : "No guardado"],
+      ["Tarifa Social", c.social ? "Sí" : "No guardado"],
+      ["Orden de opciones", S.prefs.fastFirst ? "Primero la más rápida" : "Original"]
+    ].map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("");
+    $("#scr-datos").innerHTML =
+      '<h3 class="t">👤 Mis datos y permisos</h3><p class="sub">Cada permiso se activa por separado y lo podés apagar cuando quieras.</p>' +
+      '<div class="card"><div class="card-pad" style="gap:0">' +
+      sw("medios", "Usar mis medios de pago", "Para calcular qué combinación te sale más barata.", c.medios) +
+      sw("budget", "Presupuesto mensual", "Una referencia que fijás vos, nunca un límite.", c.budget) +
+      sw("learn", "Sugerirme cambios según mis elecciones", "Siempre te preguntamos antes de cambiar algo.", c.learn) +
+      sw("fastFirst", "Mostrar primero la más rápida", "Si lo apagás, vuelve el orden original.", S.prefs.fastFirst) +
+      sw("access", "Tener en cuenta que necesito accesibilidad", "Dato sensible según la Ley 25.326: es optativo y queda solo en este teléfono.", c.access) +
+      sw("social", "Tengo Tarifa Social", "Calculamos todo con SUBE para que no pierdas el descuento.", c.social) +
+      "</div></div>" +
+      '<div class="card"><div class="card-pad"><h4>Lo que sabemos de vos</h4><dl class="facts">' + facts + "</dl></div></div>" +
+      '<div class="card"><div class="card-pad"><h4>Lo que nunca guardamos</h4><ul class="plain"><li>Números de tarjeta, claves ni códigos de seguridad</li><li>Saldos ni movimientos bancarios</li><li>Tu ubicación en tiempo real</li><li>Tus contactos</li><li>Viajes de más de 24 horas, salvo los que guardás vos</li></ul></div></div>' +
+      '<div class="row"><button class="btn" data-go="medios">Corregir mis medios</button><button class="btn danger" data-act="ask-wipe">🗑️ Borrar todos mis datos</button></div>' +
+      '<div class="disclaimer-box"><b>Principios que seguimos</b><ul class="plain" style="margin-top:5px">' +
+      "<li><b>Consentimiento informado:</b> cada permiso por separado, en lenguaje simple y revocable.</li>" +
+      "<li><b>Limitación de la finalidad:</b> tus datos solo sirven para calcular tus viajes.</li>" +
+      "<li><b>Minimización:</b> lo justo y necesario, nada de números de tarjeta.</li>" +
+      "<li><b>Exactitud:</b> promos verificadas cada semana con fuentes oficiales.</li>" +
+      "<li><b>Acceso y rectificación:</b> ves, corregís o borrás todo desde acá.</li>" +
+      "<li><b>Seguridad desde el diseño:</b> tus datos financieros no salen de tu teléfono.</li></ul></div>" +
+      '<button class="btn small" data-act="restore">Restaurar datos de ejemplo</button>';
+  }
+
+  /* ---------- Acciones ---------- */
+  function toast(msg) {
+    var t = $("#toast"); t.textContent = msg; t.classList.add("on");
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("on"); }, 2800);
+  }
+  function scrollTo(id) {
+    setTimeout(function () { var r = document.getElementById(id), s = $("#scr-comunidad"); if (r && s) s.scrollTop = r.offsetTop - 10; }, 20);
+  }
+  function act(name, el) {
+    switch (name) {
+      case "results": go("navegacion"); break;
+      case "datos": case "medios": case "beneficios": go(name); break;
+      case "open-chat": openChat(); break;
+      case "close-chat": S.chatOpen = false; renderChatLayer(); break;
+      case "social-yes": S.consent.social = true; bot("Listo. Desde ahora calculo tus viajes con SUBE para que no pierdas el descuento. Lo podés cambiar en Mis datos."); break;
+      case "social-no": bot("Perfecto, no lo guardo."); break;
+      case "access-yes": S.consent.access = true; bot("Guardado solo en tu teléfono. Desde ahora te aviso primero cualquier duda de accesibilidad. Lo podés borrar en Mis datos."); break;
+      case "access-no": bot("Perfecto, no lo guardo. Te lo pregunto solo cuando haga falta."); break;
+      case "night-yes": S.prefs.filters.night = true; bot("Activado. La más barata a Lanús tiene una espera de hasta 15 minutos en Constitución, así que de noche te sugiero la intermedia: un solo trasbordo.", [{ label: "Ver las 3 opciones", act: "results", primary: true }]); break;
+      case "night-no": bot("Perfecto, sigo mostrando el orden de siempre."); break;
+      case "nudge-yes": S.prefs.fastFirst = true; S.prefs.nudge = "done"; renderNav(); toast("Listo: primero la más rápida. Lo podés cambiar en Mis datos."); break;
+      case "nudge-no": S.prefs.nudge = "done"; renderNav(); toast("Dejamos el orden como estaba."); break;
+      case "demo-nudge": S.prefs.nudge = "pending"; S.prefs.fastFirst = false; S.consent.learn = true; go("navegacion"); break;
+      case "filter": var k = el.dataset.f; S.prefs.filters[k] = !S.prefs.filters[k]; renderNav(); break;
+      case "sw":
+        var key = el.dataset.k;
+        if (key === "fastFirst") S.prefs.fastFirst = !S.prefs.fastFirst; else S.consent[key] = !S.consent[key];
+        renderDatos(); break;
+      case "budget-off": S.consent.budget = false; renderViajes(); toast("Presupuesto desactivado."); break;
+      case "del-saved": S.saved = S.saved.filter(function (x) { return String(x.id) !== el.dataset.id; }); renderViajes(); break;
+      case "del-recent": S.recent = S.recent.filter(function (x) { return String(x.id) !== el.dataset.id; }); renderViajes(); toast("Viaje borrado."); break;
+      case "del-medio": S.medios = S.medios.filter(function (x) { return String(x.id) !== el.dataset.id; }); renderMedios(); toast("Medio de pago quitado."); break;
+      case "add-open": S.adding = true; renderMedios(); break;
+      case "add-cancel": S.adding = false; renderMedios(); break;
+      case "add-medio":
+        var tipo = $("#selTipo").value, ent = $("#selEnt").value;
+        var corto = tipo === "SUBE" ? "SUBE" : ent.replace(" (Cuenta DNI)", "");
+        S.medios.push({ id: Date.now(), tipo: tipo, ent: tipo === "SUBE" ? "Tarjeta registrada" : ent, corto: corto });
+        S.adding = false; renderMedios(); toast("Agregado. Se guardó solo en este teléfono."); break;
+      case "ask-wipe": $("#modal").classList.add("on"); break;
+      case "wipe-cancel": $("#modal").classList.remove("on"); break;
+      case "wipe-confirm":
+        S.medios = []; S.saved = []; S.recent = [];
+        S.consent = { medios: false, budget: false, learn: false, access: false, social: false };
+        S.prefs.fastFirst = false;
+        $("#modal").classList.remove("on"); renderDatos(); toast("Borramos todos tus datos."); break;
+      case "restore":
+        var r = clone(INITIAL);
+        S.medios = r.medios; S.budget = r.budget; S.saved = r.saved; S.recent = r.recent; S.consent = r.consent; S.prefs = r.prefs;
+        renderDatos(); toast("Volvieron los datos de ejemplo."); break;
+      case "trivia": S.trivia.picked = Number(el.dataset.i); renderComunidad(); break;
+      case "trivia-next": S.trivia.i = (S.trivia.i + 1) % TRIVIA.length; S.trivia.picked = null; renderComunidad(); break;
+      case "play": var n = Number(el.dataset.n); S.playing = S.playing === n ? null : n; renderComunidad(); break;
+      case "join": toast("En el prototipo este botón no abre WhatsApp."); break;
+      case "report":
+        S.reports.unshift({ st: $("#repSt").value, estado: $("#repEs").value, when: "recién, tu reporte" });
+        renderComunidad(); scrollTo("report"); toast("Gracias. Tu reporte se suma a los de otras personas."); break;
+      case "goto-comunidad": go("comunidad"); break;
+      case "goto-report": go("comunidad"); scrollTo("report"); break;
+    }
+  }
+
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-go],[data-act],[data-send]");
+    if (!el) return;
+    if (el.hasAttribute("data-send")) { if (!S.chatOpen) openChat(); send(el.getAttribute("data-send")); return; }
+    if (el.hasAttribute("data-go")) { go(el.getAttribute("data-go")); return; }
+    act(el.getAttribute("data-act"), el);
+  });
+  $("#composer").addEventListener("submit", function (e) { e.preventDefault(); var i = $("#chatInput"); var v = i.value; i.value = ""; send(v); });
+  $("#searchForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var q = norm($("#fromIn").value + " " + $("#toIn").value);
+    if (!/lanus|plaza italia|palermo/.test(q)) toast("En el prototipo cargamos un solo viaje de ejemplo: Plaza Italia ➔ Estación Lanús.");
+    go("navegacion");
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { if ($("#modal").classList.contains("on")) act("wipe-cancel"); else if (S.chatOpen) act("close-chat"); }
+  });
+
+  /* ---------- Inicio ---------- */
+  $("#closeChat").innerHTML = ic("x", 18);
+  $("#sendBtn").innerHTML = ic("send", 20);
+  $("#guideLine").innerHTML = GUIDE.map(function (g) {
+    return '<li><button class="stop" ' + (g.go ? 'data-go="' + g.go + '"' : 'data-act="' + g.act + '"') + "><b>" + g.t + "</b><span>" + g.d + "</span></button></li>";
+  }).join("");
+  $("#tests").innerHTML = TESTS.map(function (t) {
+    return '<button class="test" data-send="' + esc(t.q) + '"><small>' + t.k + "</small><span>" + esc(t.q) + "</span></button>";
+  }).join("");
+  /* QR: usa PUBLIC_URL si está cargada; si no, la dirección donde esté publicada la página (fuera de Claude) */
+  var PUBLIC_URL = "";
+  (function () {
+    var host = location.hostname || "";
+    var url = PUBLIC_URL || (location.protocol.indexOf("http") === 0 && !/claude|anthropic/.test(host) ? location.href.split("#")[0] : "");
+    if (!url || typeof qrcode !== "function") return;
+    try {
+      var qr = qrcode(0, "M"); qr.addData(url); qr.make();
+      $("#qrBox").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true });
+      $("#qrCard").hidden = false;
+    } catch (err) { /* sin QR si falla */ }
+  })();
+  greet(); renderMsgs(); renderChips(); renderScreens();
+})();
+</script>
+</body>
+</html>
